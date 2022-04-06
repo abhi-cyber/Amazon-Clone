@@ -2,13 +2,15 @@ import React, {useEffect, useState} from 'react';
 import CheckoutProduct from './CheckoutProduct';
 import './Payment.css';
 import { useStateValue } from './StateProvider';
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { CardElement,useElements, useStripe } from '@stripe/react-stripe-js';
 import CurrencyFormat from 'react-currency-format';
 import { getBasketTotal } from './reducer';
+import axios from './axios';
 
 function Payment() {
     const [{ basket, user }, dispatch] = useStateValue();
+    const history = useHistory();
 
     // Hooks for Stripe
     const stripe = useStripe();
@@ -40,7 +42,34 @@ function Payment() {
         event.preventDefault();
         setProcessing(true); // This stops From multiple pushes on the Buy Now button
 
-        
+        const payload = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement)
+            }
+        }).then(({ paymentIntent }) => {
+            // paymentIntent = payment confirmation
+
+            db
+              .collection('users')
+              .doc(user?.uid)
+              .collection('orders')
+              .doc(paymentIntent.id)
+              .set({
+                  basket: basket,
+                  amount: paymentIntent.amount,
+                  created: paymentIntent.created
+              })
+
+            setSucceeded(true);
+            setError(null)
+            setProcessing(false)
+
+            dispatch({
+                type: 'EMPTY_BASKET'
+            })
+
+            history.replace('/orders')
+        })
     }
 
     const handleChange = event => {
