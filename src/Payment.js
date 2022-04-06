@@ -5,6 +5,7 @@ import { useStateValue } from './StateProvider';
 import { Link } from "react-router-dom";
 import { CardElement,useElements, useStripe } from '@stripe/react-stripe-js';
 import CurrencyFormat from 'react-currency-format';
+import { getBasketTotal } from './reducer';
 
 function Payment() {
     const [{ basket, user }, dispatch] = useStateValue();
@@ -15,6 +16,8 @@ function Payment() {
 
     const [error,setError] = useState(null);
     const [disabled,setDisabled] = useState(true);
+    const [succeeded, setSucceeded] = useState(false);
+    const [processing, setProcessing] = useState("");
 
     const handleSubmit = e => {
         // do all the fancy stripe
@@ -86,8 +89,11 @@ function Payment() {
                                         value={getBasketTotal(basket)}
                                         displayType={"text"}
                                         thousandSeparator={true}
-                                        prefix={"$"}
+                                        prefix={"₹"}
                             />
+                            <button disabled={processing || disabled || succeeded}>
+                                <span>{processing ? <p>Processing</p> : "Buy Now"}</span>
+                            </button>
                             </div>
                         </form>
                     </div>
