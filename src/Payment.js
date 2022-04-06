@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import CheckoutProduct from './CheckoutProduct';
 import './Payment.css';
 import { useStateValue } from './StateProvider';
@@ -18,9 +18,29 @@ function Payment() {
     const [disabled,setDisabled] = useState(true);
     const [succeeded, setSucceeded] = useState(false);
     const [processing, setProcessing] = useState("");
+    const [clientSecret, setClientSecret] = useState(true);
 
-    const handleSubmit = e => {
-        // do all the fancy stripe
+    useEffect(() => {
+        //generate the special stripe secret that allows us to charge a customer
+
+        const getClientSecret = async () => {
+            const response = await axios({ // Popular fetching library
+                method: 'post',
+                // Stripe expects the total in a currencies submits
+                url: `/payment/create?total=${getBasketTotal(basket) * 100}`
+            });
+            setClientSecret(response.data.clientSecret)
+        }
+
+        getClientSecret();
+    }, [basket])
+
+    const handleSubmit = async (event) => {
+        // do all the fancy stripe stuff
+        event.preventDefault();
+        setProcessing(true); // This stops From multiple pushes on the Buy Now button
+
+        
     }
 
     const handleChange = event => {
