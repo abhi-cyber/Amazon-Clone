@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import CheckoutProduct from './CheckoutProduct';
 import './Payment.css';
 import { useStateValue } from './StateProvider';
 import { Link } from "react-router-dom";
 import { CardElement,useElements, useStripe } from '@stripe/react-stripe-js';
+import CurrencyFormat from 'react-currency-format';
 
 function Payment() {
     const [{ basket, user }, dispatch] = useStateValue();
@@ -75,6 +76,19 @@ function Payment() {
 
                         <form onSubmit={handleSubmit}>
                             <CardElement onChange={handleChange} />
+
+                            <div className='payment__priceContainer'>
+                            <CurrencyFormat
+                                        renderText={(value) => (
+                                            <h3>Order Total: {value}</h3>
+                                        )}
+                                        decimalScale={2}
+                                        value={getBasketTotal(basket)}
+                                        displayType={"text"}
+                                        thousandSeparator={true}
+                                        prefix={"$"}
+                            />
+                            </div>
                         </form>
                     </div>
                 </div>
